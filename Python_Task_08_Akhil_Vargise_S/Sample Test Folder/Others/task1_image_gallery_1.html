@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Image Gallery — CodeAlpha Task 1</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #141414;
+    --border: #222;
+    --accent: #e8ff00;
+    --accent2: #ff4d6d;
+    --text: #f0f0f0;
+    --muted: #666;
+    --card-radius: 4px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  header {
+    padding: 3rem 2rem 1.5rem;
+    text-align: center;
+    position: relative;
+  }
+  header::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 3px;
+    background: var(--accent);
+    margin: 1rem auto 0;
+  }
+  .header-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3rem, 8vw, 6rem);
+    letter-spacing: 0.05em;
+    line-height: 1;
+    color: var(--text);
+  }
+  h1 span { color: var(--accent); }
+
+  /* FILTERS */
+  .filters {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 2rem 2rem 1rem;
+  }
+  .filter-btn {
+    padding: 0.4rem 1.2rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s;
+  }
+  .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .filter-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #000;
+    font-weight: 600;
+  }
+
+  /* GRID */
+  .gallery {
+    columns: 3;
+    column-gap: 12px;
+    padding: 1rem 2rem 4rem;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  @media (max-width: 900px) { .gallery { columns: 2; } }
+  @media (max-width: 560px) { .gallery { columns: 1; } }
+
+  .gallery-item {
+    break-inside: avoid;
+    margin-bottom: 12px;
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--card-radius);
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+  }
+  .gallery-item:hover { transform: scale(1.02); }
+  .gallery-item.hidden { display: none; }
+
+  .gallery-item img {
+    width: 100%;
+    display: block;
+    transition: transform 0.5s ease;
+    filter: saturate(0.9);
+  }
+  .gallery-item:hover img { transform: scale(1.06); filter: saturate(1.2); }
+
+  .item-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 1rem;
+  }
+  .gallery-item:hover .item-overlay { opacity: 1; }
+  .item-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    letter-spacing: 0.05em;
+    color: #fff;
+  }
+  .item-cat {
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-top: 2px;
+  }
+  .zoom-icon {
+    position: absolute;
+    top: 0.8rem;
+    right: 0.8rem;
+    width: 32px;
+    height: 32px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.3s;
+    color: #000;
+    font-size: 0.9rem;
+  }
+  .gallery-item:hover .zoom-icon { opacity: 1; transform: scale(1); }
+
+  /* LIGHTBOX */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.95);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    backdrop-filter: blur(8px);
+  }
+  .lightbox.open { opacity: 1; pointer-events: all; }
+
+  .lb-inner {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+  .lb-img-wrap {
+    position: relative;
+    overflow: hidden;
+    border-radius: 4px;
+  }
+  .lb-img-wrap img {
+    max-width: 85vw;
+    max-height: 75vh;
+    object-fit: contain;
+    display: block;
+    border-radius: 4px;
+    transition: transform 0.4s cubic-bezier(.34,1.56,.64,1);
+  }
+  .lb-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  .lb-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 0.1em;
+  }
+  .lb-cat {
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .lb-counter {
+    font-size: 0.75rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  /* NAV BUTTONS */
+  .lb-btn {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--accent);
+    border: none;
+    color: #000;
+    font-size: 1.2rem;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    font-weight: bold;
+  }
+  .lb-btn:hover { background: #fff; transform: translateY(-50%) scale(1.1); }
+  .lb-prev { left: 1.5rem; }
+  .lb-next { right: 1.5rem; }
+  .lb-close {
+    position: fixed;
+    top: 1.5rem;
+    right: 1.5rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .lb-close:hover { background: var(--accent2); border-color: var(--accent2); color: #fff; }
+
+  /* SLIDE ANIM */
+  @keyframes slideIn { from { opacity:0; transform: scale(0.92); } to { opacity:1; transform:scale(1); } }
+  .lb-img-wrap img.anim { animation: slideIn 0.35s ease forwards; }
+
+  /* EMPTY STATE */
+  .empty {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+    display: none;
+  }
+  .empty.show { display: block; }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="header-label">CodeAlpha · Task 01</p>
+  <h1>Image <span>Gallery</span></h1>
+</header>
+
+<div class="filters">
+  <button class="filter-btn active" data-cat="all">All</button>
+  <button class="filter-btn" data-cat="nature">Nature</button>
+  <button class="filter-btn" data-cat="architecture">Architecture</button>
+  <button class="filter-btn" data-cat="abstract">Abstract</button>
+  <button class="filter-btn" data-cat="travel">Travel</button>
+</div>
+
+<div class="gallery" id="gallery">
+  <!-- Images will be injected by JS -->
+</div>
+<div class="empty" id="empty">No images in this category.</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox">
+  <button class="lb-close" id="lb-close">✕</button>
+  <button class="lb-btn lb-prev" id="lb-prev">&#8592;</button>
+  <button class="lb-btn lb-next" id="lb-next">&#8594;</button>
+  <div class="lb-inner">
+    <div class="lb-img-wrap">
+      <img src="" alt="" id="lb-img">
+    </div>
+    <div class="lb-info">
+      <div class="lb-title" id="lb-title"></div>
+      <div class="lb-cat" id="lb-cat"></div>
+      <div class="lb-counter" id="lb-counter"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---- DATA: Using picsum for real images ----
+const images = [
+  { id:1,  src:'https://picsum.photos/seed/forest1/800/1000',  thumb:'https://picsum.photos/seed/forest1/400/500',  title:'Forest Dawn',       cat:'nature' },
+  { id:2,  src:'https://picsum.photos/seed/city22/900/600',   thumb:'https://picsum.photos/seed/city22/450/300',   title:'Urban Lines',       cat:'architecture' },
+  { id:3,  src:'https://picsum.photos/seed/abst5/700/900',    thumb:'https://picsum.photos/seed/abst5/350/450',    title:'Flow State',        cat:'abstract' },
+  { id:4,  src:'https://picsum.photos/seed/paris3/800/600',   thumb:'https://picsum.photos/seed/paris3/400/300',   title:'City of Light',     cat:'travel' },
+  { id:5,  src:'https://picsum.photos/seed/mtn9/900/700',     thumb:'https://picsum.photos/seed/mtn9/450/350',     title:'Summit View',       cat:'nature' },
+  { id:6,  src:'https://picsum.photos/seed/arch77/700/900',   thumb:'https://picsum.photos/seed/arch77/350/450',   title:'Glass & Steel',     cat:'architecture' },
+  { id:7,  src:'https://picsum.photos/seed/wave44/800/500',   thumb:'https://picsum.photos/seed/wave44/400/250',   title:'Ocean Gradient',    cat:'abstract' },
+  { id:8,  src:'https://picsum.photos/seed/tokyo7/900/700',   thumb:'https://picsum.photos/seed/tokyo7/450/350',   title:'Neon Streets',      cat:'travel' },
+  { id:9,  src:'https://picsum.photos/seed/lake11/800/600',   thumb:'https://picsum.photos/seed/lake11/400/300',   title:'Mirror Lake',       cat:'nature' },
+  { id:10, src:'https://picsum.photos/seed/dome88/700/900',   thumb:'https://picsum.photos/seed/dome88/350/450',   title:'The Rotunda',       cat:'architecture' },
+  { id:11, src:'https://picsum.photos/seed/geo33/800/800',    thumb:'https://picsum.photos/seed/geo33/400/400',    title:'Geometry Study',    cat:'abstract' },
+  { id:12, src:'https://picsum.photos/seed/bali6/900/600',    thumb:'https://picsum.photos/seed/bali6/450/300',    title:'Island Temple',     cat:'travel' },
+  { id:13, src:'https://picsum.photos/seed/bloom2/700/900',   thumb:'https://picsum.photos/seed/bloom2/350/450',   title:'Spring Bloom',      cat:'nature' },
+  { id:14, src:'https://picsum.photos/seed/bridge4/800/500',  thumb:'https://picsum.photos/seed/bridge4/400/250',  title:'Suspension Arc',    cat:'architecture' },
+  { id:15, src:'https://picsum.photos/seed/color9/900/700',   thumb:'https://picsum.photos/seed/color9/450/350',   title:'Chromatic Drift',   cat:'abstract' },
+];
+
+const gallery = document.getElementById('gallery');
+const lightbox = document.getElementById('lightbox');
+const lbImg    = document.getElementById('lb-img');
+const lbTitle  = document.getElementById('lb-title');
+const lbCat    = document.getElementById('lb-cat');
+const lbCounter= document.getElementById('lb-counter');
+const empty    = document.getElementById('empty');
+
+let currentFilter = 'all';
+let currentIndex  = 0;
+let filtered = [...images];
+
+// Build gallery items
+function buildGallery() {
+  gallery.innerHTML = '';
+  filtered = currentFilter === 'all' ? images : images.filter(i => i.cat === currentFilter);
+  empty.classList.toggle('show', filtered.length === 0);
+
+  filtered.forEach((img, idx) => {
+    const div = document.createElement('div');
+    div.className = 'gallery-item';
+    div.innerHTML = `
+      <img src="${img.thumb}" alt="${img.title}" loading="lazy">
+      <div class="item-overlay">
+        <div class="item-title">${img.title}</div>
+        <div class="item-cat">${img.cat}</div>
+      </div>
+      <div class="zoom-icon">⊕</div>
+    `;
+    div.addEventListener('click', () => openLightbox(idx));
+    gallery.appendChild(div);
+  });
+}
+
+// Lightbox
+function openLightbox(idx) {
+  currentIndex = idx;
+  updateLightbox();
+  lightbox.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  lightbox.classList.remove('open');
+  document.body.style.overflow = '';
+}
+function updateLightbox() {
+  const img = filtered[currentIndex];
+  lbImg.src = img.src;
+  lbImg.alt = img.title;
+  lbTitle.textContent = img.title;
+  lbCat.textContent = img.cat;
+  lbCounter.textContent = `${currentIndex + 1} / ${filtered.length}`;
+  lbImg.classList.remove('anim');
+  void lbImg.offsetWidth;
+  lbImg.classList.add('anim');
+}
+function prevImg() {
+  currentIndex = (currentIndex - 1 + filtered.length) % filtered.length;
+  updateLightbox();
+}
+function nextImg() {
+  currentIndex = (currentIndex + 1) % filtered.length;
+  updateLightbox();
+}
+
+// Filter buttons
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelector('.filter-btn.active').classList.remove('active');
+    btn.classList.add('active');
+    currentFilter = btn.dataset.cat;
+    buildGallery();
+  });
+});
+
+document.getElementById('lb-close').addEventListener('click', closeLightbox);
+document.getElementById('lb-prev').addEventListener('click', prevImg);
+document.getElementById('lb-next').addEventListener('click', nextImg);
+lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
+
+// Keyboard
+document.addEventListener('keydown', e => {
+  if (!lightbox.classList.contains('open')) return;
+  if (e.key === 'ArrowLeft')  prevImg();
+  if (e.key === 'ArrowRight') nextImg();
+  if (e.key === 'Escape')     closeLightbox();
+});
+
+// Init
+buildGallery();
+</script>
+</body>
+</html>

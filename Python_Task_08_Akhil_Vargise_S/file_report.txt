@@ -1,0 +1,40 @@
+=======================================================
+          SMART FILE ORGANIZER - REPORT
+=======================================================
+  Date        : 2025-07-15 11:32:45
+  Folder Name : TestFolder
+  Folder Path : C:\Users\YourName\TestFolder
+  Total Files : 12
+
+--- Category-wise Count ---
+  Images         : 3
+  Documents      : 3
+  Videos         : 2
+  Audio          : 2
+  Archives       : 1
+  Programs       : 0
+  Others         : 1
+
+--- Duplicate Files ---
+  No Duplicate Files Found.
+
+--- Organized Folder Structure ---
+  Images/
+    └── photo1.jpg
+    └── wallpaper.png
+    └── profile.jpeg
+  Documents/
+    └── resume.pdf
+    └── notes.txt
+    └── report.docx
+  Videos/
+    └── movie.mp4
+    └── tutorial.mkv
+  Audio/
+    └── song.mp3
+    └── podcast.wav
+  Archives/
+    └── backup.zip
+  Others/
+    └── unknownfile.xyz
+=======================================================

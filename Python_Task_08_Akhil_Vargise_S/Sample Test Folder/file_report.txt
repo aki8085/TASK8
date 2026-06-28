@@ -1,0 +1,30 @@
+=======================================================
+          SMART FILE ORGANIZER - REPORT
+=======================================================
+  Date        : 2026-06-28 19:32:38
+  Folder Name : Sample Test Folder
+  Folder Path : C:\Users\AKHIL VARGISE S\OneDrive\Desktop\PYTHON\Python_Task_08_Akhil_Vargise_S\Sample Test Folder
+  Total Files : 5
+
+--- Category-wise Count ---
+  Images         : 1
+  Documents      : 2
+  Videos         : 0
+  Audio          : 0
+  Archives       : 0
+  Programs       : 0
+  Others         : 2
+
+--- Duplicate Files ---
+  No Duplicate Files Found.
+
+--- Organized Folder Structure ---
+  Images/
+    --> WIN_20251122_15_20_31_Pro.jpg
+  Documents/
+    --> Python and C Programming Task 02 (1).pdf
+    --> Python and C Programming Task 02.pdf
+  Others/
+    --> index (1).html
+    --> task1_image_gallery_1.html
+=======================================================
